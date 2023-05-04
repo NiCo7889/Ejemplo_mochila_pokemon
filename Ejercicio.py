@@ -1,37 +1,17 @@
 import pandas as pd
-from datetime import datetime, timedelta
+from sklearn.preprocessing import MinMaxScaler
 
-# Lee el archivo CSV en un DataFrame de pandas
-pokemon_df = pd.read_csv('pokemon.csv')
+# Cargar los datos del archivo CSV en un dataframe de pandas
+df = pd.read_csv('pokemon.csv')
 
-# Convierte la columna de fecha en un objeto de datetime
-pokemon_df['Fecha de finalización'] = pd.to_datetime(pokemon_df['Fecha de finalización'])
+# Seleccionar las columnas que deseas normalizar
+cols_to_normalize = ['attack', 'defense', 'speed']
 
-# Define el número de días que quieres buscar Pokemon
-num_dias = 7
+# Crear un objeto MinMaxScaler
+scaler = MinMaxScaler()
 
-# Define la fecha de inicio de la búsqueda
-fecha_inicio = datetime.today()
+# Normalizar los datos seleccionados
+df[cols_to_normalize] = scaler.fit_transform(df[cols_to_normalize])
 
-# Define la fecha final de la búsqueda
-fecha_fin = fecha_inicio + timedelta(days=num_dias)
-
-# Crea un bucle que recorra todos los días de búsqueda
-while fecha_inicio < fecha_fin:
-
-    # Filtra los Pokemon que todavía están disponibles en este día
-    pokemon_disponibles = pokemon_df[pokemon_df['Fecha de finalización'] >= fecha_inicio]
-
-    # Si no hay Pokemon disponibles para capturar en este día, pasa al siguiente día
-    if pokemon_disponibles.empty:
-        fecha_inicio += timedelta(days=1)
-        continue
-
-    # Selecciona el Pokemon con el valor más alto para capturar en este día
-    pokemon_capturado = pokemon_disponibles.loc[pokemon_disponibles['Valor'].idxmax()]
-
-    # Imprime el Pokemon capturado y su valor
-    print(f"¡Capturaste a {pokemon_capturado['Nombre']} por un valor de {pokemon_capturado['Valor']}!")
-
-    # Avanza la fecha de inicio al día siguiente
-    fecha_inicio += timedelta(days=1)
+# Guardar los datos normalizados en un nuevo archivo CSV
+df.to_csv('pokemon_normalized.csv', index=False)
